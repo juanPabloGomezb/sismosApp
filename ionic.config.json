@@ -1,0 +1,7 @@
+{
+  "name": "sismoApp",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
