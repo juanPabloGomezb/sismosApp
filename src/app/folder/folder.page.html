@@ -89,5 +89,39 @@
       </div>
       <p class="legend-note">El tamaño indica la magnitud del terremoto</p>
     </div>
+
+    <!-- Nuevo componente de lista de terremotos -->
+    <div class="earthquakes-list" *ngIf="earthquakeData && earthquakeData.length > 0">
+      <h3>Terremotos Encontrados ({{ earthquakeData.length }})</h3>
+      
+      <ion-list>
+        <ion-item *ngFor="let quake of earthquakeData" (click)="selectEarthquake(quake)" [class.selected-quake]="selectedQuake === quake">
+          <ion-thumbnail slot="start" [ngStyle]="{'background-color': getDepthColor(quake.geometry.coordinates[2])}">
+            <div class="magnitude">{{ quake.properties.mag.toFixed(1) }}</div>
+          </ion-thumbnail>
+          <ion-label>
+            <h2>{{ quake.properties.place || 'Ubicación no disponible' }}</h2>
+            <p>
+              <ion-icon name="calendar-outline"></ion-icon>
+              {{ getFormattedDate(quake.properties.time) }}
+            </p>
+            <p>
+              <ion-icon name="analytics-outline"></ion-icon>
+              Profundidad: {{ quake.geometry.coordinates[2].toFixed(1) }} km
+            </p>
+            <p>
+              <ion-icon name="location-outline"></ion-icon>
+              {{ quake.geometry.coordinates[1].toFixed(4) }}, {{ quake.geometry.coordinates[0].toFixed(4) }}
+            </p>
+          </ion-label>
+          <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+        </ion-item>
+      </ion-list>
+    </div>
+    
+    <div *ngIf="earthquakeData && earthquakeData.length === 0" class="no-results">
+      <ion-icon name="alert-circle-outline" size="large"></ion-icon>
+      <p>No se encontraron terremotos en esta área</p>
+    </div>
   </div>
 </ion-content>
