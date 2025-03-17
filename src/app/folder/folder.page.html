@@ -38,6 +38,23 @@
         </ion-input>
       </ion-item>
       
+      <!-- Nuevos controles de fecha -->
+      <ion-item>
+        <ion-label position="stacked">Fecha inicial</ion-label>
+        <ion-input
+          type="datetime-local"
+          [(ngModel)]="startDate">
+        </ion-input>
+      </ion-item>
+      
+      <ion-item>
+        <ion-label position="stacked">Fecha final</ion-label>
+        <ion-input
+          type="datetime-local"
+          [(ngModel)]="endDate">
+        </ion-input>
+      </ion-item>
+      
       <ion-item>
         <ion-label>Radio (aprox. {{radius * 111.12 | number:'1.0-0'}} km)</ion-label>
         <ion-range
@@ -90,7 +107,7 @@
       <p class="legend-note">El tamaño indica la magnitud del terremoto</p>
     </div>
 
-    <!-- Nuevo componente de lista de terremotos -->
+    <!-- Componente de lista de terremotos -->
     <div class="earthquakes-list" *ngIf="earthquakeData && earthquakeData.length > 0">
       <h3>Terremotos Encontrados ({{ earthquakeData.length }})</h3>
       
@@ -121,7 +138,7 @@
     
     <div *ngIf="earthquakeData && earthquakeData.length === 0" class="no-results">
       <ion-icon name="alert-circle-outline" size="large"></ion-icon>
-      <p>No se encontraron terremotos en esta área</p>
+      <p>No se encontraron terremotos en esta área y período de tiempo</p>
     </div>
   </div>
 </ion-content>

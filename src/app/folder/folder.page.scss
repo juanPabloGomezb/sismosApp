@@ -200,3 +200,17 @@ ion-item ion-label p ion-icon {
   border: 2px solid white;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
+/* Estilos para los nuevos controles de fecha */
+ion-input[type="datetime-local"] {
+  --padding-start: 10px;
+  --padding-end: 10px;
+  --padding-top: 10px;
+  --padding-bottom: 10px;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  #map {
+    height: 50vh;
+  }
+}

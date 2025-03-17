@@ -2,7 +2,7 @@ import { Component, AfterViewInit, OnInit, inject, OnDestroy } from '@angular/co
 import { ActivatedRoute } from '@angular/router';
 import * as L from 'leaflet';
 import axios from 'axios';
-import { IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, IonRange, IonItem, IonLabel, IonButton, IonInput, IonList, IonThumbnail, IonIcon } from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, IonRange, IonItem, IonLabel, IonButton, IonInput, IonList, IonThumbnail, IonIcon, IonDatetime } from '@ionic/angular/standalone';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe, NgStyle, NgIf, NgFor } from '@angular/common';
 import { fromEvent, Subscription } from 'rxjs';
@@ -29,6 +29,7 @@ import { calendarOutline, analyticsOutline, locationOutline, alertCircleOutline,
     IonList,
     IonThumbnail,
     IonIcon,
+    IonDatetime,
     FormsModule,
     DecimalPipe,
     NgStyle,
@@ -53,6 +54,10 @@ export class FolderPage implements OnInit, AfterViewInit, OnDestroy {
   public radius: number = 5;  // Radio en grados (aprox. 500km)
   public limit: number = 20;  // Límite de resultados
   
+  // Nuevos parámetros de fecha
+  public startDate: string = '';
+  public endDate: string = '';
+  
   constructor() {
     // Registrar los iconos de Ionicons que utilizamos
     addIcons({
@@ -66,6 +71,25 @@ export class FolderPage implements OnInit, AfterViewInit, OnDestroy {
   
   ngOnInit() {
     this.folder = this.activatedRoute.snapshot.paramMap.get('id') as string;
+    
+    // Inicializar fechas con 30 días de diferencia por defecto
+    const now = new Date();
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(now.getDate() - 30);
+    
+    this.startDate = this.formatDateForInput(thirtyDaysAgo);
+    this.endDate = this.formatDateForInput(now);
+  }
+  
+  // Formato para los controles de entrada de fecha
+  private formatDateForInput(date: Date): string {
+    return date.toISOString().slice(0, 16);
+  }
+  
+  // Formato para la API
+  private formatDateForApi(htmlDate: string): string {
+    if (!htmlDate) return '';
+    return new Date(htmlDate).toISOString();
   }
     
   private initMap(): void {
@@ -201,7 +225,7 @@ export class FolderPage implements OnInit, AfterViewInit, OnDestroy {
     return Math.round(this.radius * 111.12);
   }
   
-  // Método para cargar terremotos desde la API USGS
+  // Método para cargar terremotos desde la API USGS con filtro de fechas
   private async loadEarthquakes(): Promise<void> {
     try {
       // Limpiar marcadores anteriores
@@ -210,8 +234,17 @@ export class FolderPage implements OnInit, AfterViewInit, OnDestroy {
       // Reiniciar datos seleccionados
       this.selectedQuake = null;
       
-      // Construir URL con parámetros
-      const apiUrl = `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude=${this.latitude}&longitude=${this.longitude}&maxradiuskm=${this.radius * 111.12}&limit=${this.limit}`;
+      // Construir URL con parámetros básicos
+      let apiUrl = `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude=${this.latitude}&longitude=${this.longitude}&maxradiuskm=${this.radius * 111.12}&limit=${this.limit}`;
+      
+      // Añadir parámetros de fecha si están disponibles
+      if (this.startDate) {
+        apiUrl += `&starttime=${this.formatDateForApi(this.startDate)}`;
+      }
+      
+      if (this.endDate) {
+        apiUrl += `&endtime=${this.formatDateForApi(this.endDate)}`;
+      }
       
       const response = await axios.get(apiUrl);
       const earthquakes = response.data.features;
@@ -286,7 +319,7 @@ export class FolderPage implements OnInit, AfterViewInit, OnDestroy {
       
       // Mostrar mensaje si no hay terremotos
       if (earthquakes.length === 0) {
-        console.log('No se encontraron terremotos en el radio especificado');
+        console.log('No se encontraron terremotos en el radio y período especificados');
       }
       
       // Trigger a resize check after adding all markers
