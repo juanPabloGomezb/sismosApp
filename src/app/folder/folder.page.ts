@@ -211,7 +211,7 @@ export class FolderPage implements OnInit, AfterViewInit, OnDestroy {
       this.selectedQuake = null;
       
       // Construir URL con parámetros
-      const apiUrl = https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude=${this.latitude}&longitude=${this.longitude}&maxradiuskm=${this.radius * 111.12}&limit=${this.limit};
+      const apiUrl = `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude=${this.latitude}&longitude=${this.longitude}&maxradiuskm=${this.radius * 111.12}&limit=${this.limit}`;
       
       const response = await axios.get(apiUrl);
       const earthquakes = response.data.features;
@@ -241,7 +241,7 @@ export class FolderPage implements OnInit, AfterViewInit, OnDestroy {
         })
       }).addTo(this.map);
       
-      centerMarker.bindPopup(<b>Centro de búsqueda</b><br>Lat: ${this.latitude.toFixed(4)}, Lng: ${this.longitude.toFixed(4)});
+      centerMarker.bindPopup(`<b>Centro de búsqueda</b><br>Lat: ${this.latitude.toFixed(4)}, Lng: ${this.longitude.toFixed(4)}`);
       this.markers.push(centerMarker);
       
       // Añadir marcadores de terremotos
