@@ -8,16 +8,86 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">{{ folder }}</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
-  <!-- Contenedor para el mapa con margen -->
-  <div id="map-container">
-    <div id="map"></div>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <div class="container">
+    <!-- Contenedor del mapa mejorado -->
+    <div class="map-container" id="map-container">
+      <div id="map"></div>
+    </div>
+    
+    <div class="controls-container">
+      <ion-item>
+        <ion-label position="stacked">Latitud</ion-label>
+        <ion-input
+          type="number"
+          [(ngModel)]="latitude"
+          min="-90"
+          max="90"
+          step="0.0001">
+        </ion-input>
+      </ion-item>
+      
+      <ion-item>
+        <ion-label position="stacked">Longitud</ion-label>
+        <ion-input
+          type="number"
+          [(ngModel)]="longitude"
+          min="-180"
+          max="180"
+          step="0.0001">
+        </ion-input>
+      </ion-item>
+      
+      <ion-item>
+        <ion-label>Radio (aprox. {{radius * 111.12 | number:'1.0-0'}} km)</ion-label>
+        <ion-range
+          [(ngModel)]="radius"
+          min="1"
+          max="20"
+          step="1"
+          snaps="true">
+        </ion-range>
+      </ion-item>
+      
+      <ion-item>
+        <ion-label>Límite de resultados</ion-label>
+        <ion-range
+          [(ngModel)]="limit"
+          min="5"
+          max="100"
+          step="5"
+          snaps="true">
+        </ion-range>
+      </ion-item>
+      
+      <ion-button expand="full" (click)="updateMap()">
+        Buscar Terremotos
+      </ion-button>
+    </div>
+    
+    <div class="legend">
+      <h4>Leyenda</h4>
+      <div class="legend-item">
+        <span class="color-box" style="background-color: #ff0000;"></span>
+        <span>Superficial (&lt; 10km)</span>
+      </div>
+      <div class="legend-item">
+        <span class="color-box" style="background-color: #ff9900;"></span>
+        <span>Medio (10-50km)</span>
+      </div>
+      <div class="legend-item">
+        <span class="color-box" style="background-color: #ffff00;"></span>
+        <span>Profundo (50-100km)</span>
+      </div>
+      <div class="legend-item">
+        <span class="color-box" style="background-color: #00ff00;"></span>
+        <span>Muy profundo (100-300km)</span>
+      </div>
+      <div class="legend-item">
+        <span class="color-box" style="background-color: #0000ff;"></span>
+        <span>Extremadamente profundo (&gt; 300km)</span>
+      </div>
+      <p class="legend-note">El tamaño indica la magnitud del terremoto</p>
+    </div>
   </div>
 </ion-content>
-
-  
