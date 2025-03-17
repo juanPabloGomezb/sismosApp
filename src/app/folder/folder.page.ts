@@ -21,6 +21,8 @@ export class FolderPage implements OnInit, AfterViewInit {
   ngOnInit() {
     this.folder = this.activatedRoute.snapshot.paramMap.get('id') as string;
   }
+/* Hola comentarios x */
+
 
   ngAfterViewInit(): void {
     setTimeout(() => {
