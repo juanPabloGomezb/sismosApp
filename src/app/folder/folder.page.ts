@@ -22,6 +22,7 @@ export class FolderPage implements OnInit, AfterViewInit {
     this.folder = this.activatedRoute.snapshot.paramMap.get('id') as string;
   }
 /* Hola comentarios x */
+//prueba1
 
 
   ngAfterViewInit(): void {
