@@ -2,11 +2,13 @@ import { Component, AfterViewInit, OnInit, inject, OnDestroy } from '@angular/co
 import { ActivatedRoute } from '@angular/router';
 import * as L from 'leaflet';
 import axios from 'axios';
-import { IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, IonRange, IonItem, IonLabel, IonButton, IonInput } from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, IonRange, IonItem, IonLabel, IonButton, IonInput, IonList, IonThumbnail, IonIcon } from '@ionic/angular/standalone';
 import { FormsModule } from '@angular/forms';
-import { DecimalPipe } from '@angular/common';
+import { DecimalPipe, NgStyle, NgIf, NgFor } from '@angular/common';
 import { fromEvent, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import { addIcons } from 'ionicons';
+import { calendarOutline, analyticsOutline, locationOutline, alertCircleOutline, chevronForwardOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-folder',
@@ -24,8 +26,14 @@ import { debounceTime } from 'rxjs/operators';
     IonLabel,
     IonButton,
     IonInput,
+    IonList,
+    IonThumbnail,
+    IonIcon,
     FormsModule,
-    DecimalPipe
+    DecimalPipe,
+    NgStyle,
+    NgIf,
+    NgFor
   ],
 })
 export class FolderPage implements OnInit, AfterViewInit, OnDestroy {
@@ -35,19 +43,31 @@ export class FolderPage implements OnInit, AfterViewInit, OnDestroy {
   private markers: L.Layer[] = [];
   private resizeSubscription!: Subscription;
   
+  // Datos de terremotos
+  public earthquakeData: any[] = [];
+  public selectedQuake: any = null;
+  
   // Parámetros de búsqueda de terremotos
   public latitude: number = 4.6097;  // Bogotá por defecto
   public longitude: number = -74.0817;
   public radius: number = 5;  // Radio en grados (aprox. 500km)
   public limit: number = 20;  // Límite de resultados
   
-  constructor() {}
+  constructor() {
+    // Registrar los iconos de Ionicons que utilizamos
+    addIcons({
+      calendarOutline,
+      analyticsOutline,
+      locationOutline,
+      alertCircleOutline,
+      chevronForwardOutline
+    });
+  }
   
   ngOnInit() {
     this.folder = this.activatedRoute.snapshot.paramMap.get('id') as string;
   }
     
-  
   private initMap(): void {
     if (this.map) {
       this.map.remove();
@@ -187,11 +207,17 @@ export class FolderPage implements OnInit, AfterViewInit, OnDestroy {
       // Limpiar marcadores anteriores
       this.clearMarkers();
       
+      // Reiniciar datos seleccionados
+      this.selectedQuake = null;
+      
       // Construir URL con parámetros
-      const apiUrl = `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude=${this.latitude}&longitude=${this.longitude}&maxradiuskm=${this.radius * 111.12}&limit=${this.limit}`;
+      const apiUrl = https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude=${this.latitude}&longitude=${this.longitude}&maxradiuskm=${this.radius * 111.12}&limit=${this.limit};
       
       const response = await axios.get(apiUrl);
       const earthquakes = response.data.features;
+      
+      // Guardar datos para la lista
+      this.earthquakeData = earthquakes;
       
       // Dibujar círculo de radio
       const radiusCircle = L.circle([this.latitude, this.longitude], {
@@ -215,7 +241,7 @@ export class FolderPage implements OnInit, AfterViewInit, OnDestroy {
         })
       }).addTo(this.map);
       
-      centerMarker.bindPopup(`<b>Centro de búsqueda</b><br>Lat: ${this.latitude.toFixed(4)}, Lng: ${this.longitude.toFixed(4)}`);
+      centerMarker.bindPopup(<b>Centro de búsqueda</b><br>Lat: ${this.latitude.toFixed(4)}, Lng: ${this.longitude.toFixed(4)});
       this.markers.push(centerMarker);
       
       // Añadir marcadores de terremotos
@@ -250,6 +276,11 @@ export class FolderPage implements OnInit, AfterViewInit, OnDestroy {
           <p><strong>Coordenadas:</strong> ${lat.toFixed(4)}, ${lng.toFixed(4)}</p>
         `);
         
+        // Añadir evento de clic al marcador
+        marker.on('click', () => {
+          this.selectedQuake = quake;
+        });
+        
         this.markers.push(marker);
       });
       
@@ -276,7 +307,7 @@ export class FolderPage implements OnInit, AfterViewInit, OnDestroy {
   }
   
   // Obtener color según la profundidad del terremoto
-  private getDepthColor(depth: number): string {
+  public getDepthColor(depth: number): string {
     if (depth < 10) return '#ff0000'; // Superficial - rojo
     if (depth < 50) return '#ff9900'; // Medio - naranja
     if (depth < 100) return '#ffff00'; // Profundo - amarillo
@@ -292,5 +323,34 @@ export class FolderPage implements OnInit, AfterViewInit, OnDestroy {
     if (radius <= 50) return 6;
     if (radius <= 100) return 5;
     return 4;
+  }
+  
+  // Selecciona un terremoto y centra el mapa en él
+  public selectEarthquake(quake: any): void {
+    this.selectedQuake = quake;
+    
+    if (this.map && quake) {
+      const lat = quake.geometry.coordinates[1];
+      const lng = quake.geometry.coordinates[0];
+      
+      // Centrar el mapa en el terremoto seleccionado
+      this.map.setView([lat, lng], 8);
+      
+      // Buscar y abrir el popup correspondiente
+      this.markers.forEach(marker => {
+        if (marker instanceof L.CircleMarker) {
+          const markerLatLng = marker.getLatLng();
+          if (markerLatLng.lat === lat && markerLatLng.lng === lng) {
+            marker.openPopup();
+          }
+        }
+      });
+    }
+  }
+  
+  // Formatea la fecha para mostrarla en la lista
+  public getFormattedDate(timestamp: number): string {
+    const date = new Date(timestamp);
+    return date.toLocaleString();
   }
 }
